@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+# Requires `aspell` to be installed
+#
+# USAGE:
+#
+# single file:
+#   spellcheck README.md
+#
+# multiple files:
+#   spellcheck **/*.md
+
+files = ARGV
+
+files.each do |f|
+  system("aspell check #{f}")
+end
