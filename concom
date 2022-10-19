@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+# Helper for crafting Conventional Commits more easily.
+#
+# Call it with `concom` or alias it in bash with:
+#
+# ```
+# alias gc='concom'
+# ```
+
+require 'bundler/inline'
+
+begin
+  gemfile do
+    source 'https://rubygems.org'
+    gem 'tty-prompt', '~> 0.23.1', require: false
+  end
+rescue => e
+  puts "failed to install gems: #{e}"
+  raise e
+end
+
+def err(msg)
+  abort("Error: #{msg}")
+end
+
+require "tty-prompt"
+prompt = TTY::Prompt.new(interrupt: :exit)
+
+commit_types = %w(feat fix chore)
+commit_type = prompt.select("Select commit type:", commit_types)
+
+scope = prompt.ask("Scope (optional, [Enter] to skip):")
+scope.strip! if scope
+
+description = prompt.ask("Description:")
+if description.nil?
+  err("Description is required")
+else
+  description.strip!
+end
+
+body = prompt.multiline("Body (optional):")
+body = body.join("")
+
+message = commit_type
+if scope && !scope.empty?
+  message = "#{message}(#{scope})"
+end
+message = "#{message}: #{description}"
+
+system("git commit -m \"#{message}\" -m \"#{body}\" #{ARGV.join(" ")}", exception: true)
