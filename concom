@@ -27,13 +27,56 @@ end
 require "tty-prompt"
 prompt = TTY::Prompt.new(interrupt: :exit)
 
-commit_types = %w(feat fix chore)
-commit_type = prompt.select("Select commit type:", commit_types)
+CONFIG = "concom-config.json"
+default_config = {
+  allow_custom_scope: true,
+  allow_no_scope: true,
+  breaking_changes: true,
+  types: %w(feat fix chore),
+  scopes: [],
+}
+if File.exist?(CONFIG)
+  require "json"
+  custom_config = JSON.parse(File.read(CONFIG))
+else
+  custom_config = {}
+end
 
-breaking = prompt.yes?("Breaking change?")
+require "ostruct"
+config = OpenStruct.new(default_config.merge(custom_config))
 
-scope = prompt.ask("Scope (optional, [Enter] to skip):")
-scope.strip! if scope
+commit_type = prompt.select("Commit type:", config.types)
+
+if config.breaking_changes
+  breaking = prompt.yes?("Breaking change?")
+else
+  breaking = false
+end
+
+if config.scopes.empty?
+  scope = prompt.ask("Scope (optional, [Enter] to skip):")
+  scope.strip! if scope
+else
+  meta_scopes = []
+
+  CUSTOM = "[custom]"
+  if config.allow_custom_scope
+    meta_scopes.push(CUSTOM)
+  end
+  NONE = "[none]"
+  if config.allow_no_scope
+    meta_scopes.push(NONE)
+  end
+
+  scope = prompt.select("Scope:", config.scopes.push(CUSTOM, NONE))
+
+  case scope
+  when NONE
+    scope = nil
+  when CUSTOM
+    scope = prompt.ask("Custom scope (optional, [Enter] to skip):")
+  end
+end
 
 description = prompt.ask("Description:")
 if description.nil?
