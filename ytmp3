@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+# Requires `youtube-dl` to be installed
+#
+# USAGE:
+#
+#   ytmp3 https://youtube.com/video?id=whatever
+#
+system("youtube-dl -x --audio-format mp3 --audio-quality 0 #{ARGV.join(" ")}")
