@@ -30,6 +30,8 @@ prompt = TTY::Prompt.new(interrupt: :exit)
 commit_types = %w(feat fix chore)
 commit_type = prompt.select("Select commit type:", commit_types)
 
+breaking = prompt.yes?("Breaking change?")
+
 scope = prompt.ask("Scope (optional, [Enter] to skip):")
 scope.strip! if scope
 
@@ -46,6 +48,9 @@ body = body.join("")
 message = commit_type
 if scope && !scope.empty?
   message = "#{message}(#{scope})"
+end
+if breaking
+  message = "#{message}!"
 end
 message = "#{message}: #{description}"
 
