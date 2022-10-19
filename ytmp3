@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# Downloads a YouTube video as an MP3.
+#
 # Requires `youtube-dl` to be installed
 #
 # USAGE:
