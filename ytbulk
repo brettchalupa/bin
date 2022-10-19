@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+# Downloads videos from a text file. Each video must be its own line. Deletes the file upon success.
+
+# Requires `youtube-dl` to be installed
+#
+# USAGE:
+#
+#   ytbulk FILE
+#   ytbulk vids.txt
+
+file = ARGV[0]
+abort("Error: file must be specified") unless file
+File.readlines(file).each do |line|
+  system("youtube-dl #{line.strip}", exception: true)
+end
+File.delete(file)
