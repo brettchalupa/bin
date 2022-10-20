@@ -94,9 +94,10 @@ if breaking
 end
 message = "#{message}: #{description}"
 
+require "tempfile"
+tmp = Tempfile.new("#{Time.now.to_i}-concom-")
+
 if ENV["EDITOR"]
-  require "tempfile"
-  tmp = Tempfile.new("#{Time.now.to_i}-concom")
   tmp.write(
     <<~EOS
     #{message}
@@ -104,15 +105,16 @@ if ENV["EDITOR"]
     EOS
   )
   tmp.rewind
-  system(ENV["EDITOR"], tmp.path, exception: true)
+  system("#{ENV["EDITOR"]} -c 'set filetype=gitcommit' #{tmp.path}", exception: true)
   message = tmp.read
-  tmp.close
-  tmp.unlink
   err("canceled, message empty") if message.strip.empty?
 else
   body = prompt.multiline("Body (optional):")
   body = body.join("")
   message = "#{message}\n\n#{body}"
+  tmp.write(message)
 end
 
-system("git commit -m '#{message}' #{ARGV.join(' ')}", exception: true)
+system("git commit -F '#{tmp.path}' #{ARGV.join(' ')}", exception: true)
+tmp.close
+tmp.unlink
