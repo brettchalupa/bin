@@ -47,12 +47,6 @@ config = OpenStruct.new(default_config.merge(custom_config))
 
 commit_type = prompt.select("Commit type:", config.types)
 
-if config.breaking_changes
-  breaking = prompt.yes?("Breaking change?")
-else
-  breaking = false
-end
-
 if config.scopes.empty?
   scope = prompt.ask("Scope (optional, [Enter] to skip):")
   scope.strip! if scope
@@ -85,8 +79,11 @@ else
   description.strip!
 end
 
-body = prompt.multiline("Body (optional):")
-body = body.join("")
+if config.breaking_changes
+  breaking = prompt.yes?("Breaking change?")
+else
+  breaking = false
+end
 
 message = commit_type
 if scope && !scope.empty?
@@ -97,4 +94,25 @@ if breaking
 end
 message = "#{message}: #{description}"
 
-system("git commit -m \"#{message}\" -m \"#{body}\" #{ARGV.join(" ")}", exception: true)
+if ENV["EDITOR"]
+  require "tempfile"
+  tmp = Tempfile.new("#{Time.now.to_i}-concom")
+  tmp.write(
+    <<~EOS
+    #{message}
+    #{ breaking ? "\n\nBREAKING CHANGE: " : nil }
+    EOS
+  )
+  tmp.rewind
+  system(ENV["EDITOR"], tmp.path, exception: true)
+  message = tmp.read
+  tmp.close
+  tmp.unlink
+  err("canceled, message empty") if message.strip.empty?
+else
+  body = prompt.multiline("Body (optional):")
+  body = body.join("")
+  message = "#{message}\n\n#{body}"
+end
+
+system("git commit -m '#{message}' #{ARGV.join(' ')}", exception: true)
