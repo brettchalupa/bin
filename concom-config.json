@@ -1,7 +1,0 @@
-{
-  "breaking_changes": false,
-  "scopes": [
-    "users",
-    "dashboard"
-  ]
-}
