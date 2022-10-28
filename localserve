@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# boot up a simple web server for the local directory at port 5555, useful for
+# viewing files on a LAN.
+ruby -run -e httpd . -p 5555
