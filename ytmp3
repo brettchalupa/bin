@@ -8,4 +8,4 @@
 #
 #   ytmp3 https://youtube.com/video?id=whatever
 #
-system("youtube-dl -x --audio-format mp3 --audio-quality 0 #{ARGV.join(" ")}")
+system("yt-dlp -x --audio-format mp3 --audio-quality 0 #{ARGV.join(" ")}")
